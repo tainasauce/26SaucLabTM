@@ -63,7 +63,7 @@ html,body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden
 const $=s=>document.querySelector(s),art=$('#art'),cl=o=>JSON.parse(JSON.stringify(o));
 // ---------- ESTADO ÚNICO ----------
 const DB=[1,.875,1,.75,.375,.25],DEF0=[.8,.6,.8,.5,.3,.2];
-const S={vol:.75,amt:0,mst:.8,inst:0,chr:0,tr:0,oct:0,split:0,sb:0,mode:'organ',act:0,fav:[],q:-1,po:0,pt:0,chd:1,P:[],pc:-1,nid:0,qp:[-1,-1,-1,-1],th:'AMARELO',hid:[],al:{},vw:null,tm:-1,fx:{},fp:0,bpm:120,bpb:4,sync:0,sk:60,sz:['R','L','L','L','L','L','L','L'],lib:[],pdb:[],pk:-1,pb:0,pv:.7,pon:1,pm:['sim1','sim4','int'],
+const S={vol:0,amt:0,mst:.8,inst:0,chr:0,tr:0,oct:0,split:0,sb:0,mode:'organ',act:0,fav:[],q:-1,po:0,pt:0,chd:1,P:[],pc:-1,nid:0,qp:[-1,-1,-1,-1],th:'AMARELO',hid:[],al:{},vw:null,tm:-1,fx:{},fp:0,bpm:120,bpb:4,sync:0,sk:60,sz:['R','L','L','L','L','L','L','L'],lib:[],pdb:[],pk:-1,pb:0,pv:.7,pon:1,pm:['','',''],
 og:{on:0,db:[...DB],perc:0,vib:0,rot:0,oct:0,tr:0},
 L:[0,1,2,3,4,5].map(i=>({src:null,on:0,vol:0,db:[...DB],perc:0,vib:0,rot:0}))};
 const DEF=JSON.parse(JSON.stringify(S));
@@ -71,7 +71,7 @@ const T={s0:0,fi:0,pr:0,ii:0,mi:0,pk:-1,pd:0,pi:0,ai:0,cf:0,qi:0,qj:0,ti:0,sti:0
 try{const o=JSON.parse(localStorage.getItem('sauce')||localStorage.getItem('stageflow'));if(o){migOrg(o);Object.assign(S,o)}}catch(e){}
 try{if(S.og&&S.og.db&&S.og.db.join()==DEF0.join())S.og.db=[...DB];if(S.og&&!S.ogOff){S.og.on=0;S.ogOff=1}}catch(e){}
 while(S.sz.length<8)S.sz.push('L');
-if((S.ver||0)<2)S.amt=0;if((S.ver||0)<3){S.L.forEach(l=>l.vol=0);S.ver=3}if((S.ver||0)<4){if(S.th=='AZUL')S.th='AMARELO';S.ver=4}
+if((S.ver||0)<2)S.amt=0;if((S.ver||0)<3){S.L.forEach(l=>l.vol=0);S.ver=3}if((S.ver||0)<4){if(S.th=='AZUL')S.th='AMARELO';S.ver=4}if((S.ver||0)<5){if(S.vol==.75)S.vol=0;if(S.pm&&S.pm.join()=='sim1,sim4,int')S.pm=['','',''];S.ver=5}
 let sv;const save=()=>{clearTimeout(sv);sv=setTimeout(()=>{try{localStorage.setItem('sauce',JSON.stringify(S))}catch(e){}},400)};
 const VIB=['OFF','V1','V2','V3','C1','C2','C3'],VD=[0,5,10,18,4,7,12],CH=[0,0,0,0,7,13,22],ROT=['OFF','SLOW','FAST'],H=[.5,1.5,1,2,3,4];
 const INS=[{p:[[1,.55],[2,.3],[3,.18],[4,.1],[6,.04]],t:2.2,k:.02},{p:[[1,.6],[2,.2],[5,.12]],t:1.3,k:.015},{p:[[1,.5],[2,.4],[3,.3],[4,.15]],t:.9,k:.012}];
@@ -160,7 +160,7 @@ const MORE_I=['TEMA','BPM','SYNC EFEITOS','METRÔNOMO','BLOQUEAR TELA'];
 function pickItem(it,fp){if(!it)return;if(it.fid){const f=S.lib.find(x=>x.id==it.fid);if(!f)return;if(f.ps.length>1){T.pf=it;T.pr=0;T.view='pre';ui();return}it={id:'sf:'+f.id+':0',n:it.n}}finishPick(it,fp)}
 function finishPick(it,fp){if(T.padb){addPadBank(it);return}T.pend=it;T.di=S.act;T.fromPre=fp?1:0;if(T.sa!=null&&it.id){const k=S.L.findIndex(l=>l.src&&sameSnd(l.src,it.id));if(k>=0){T.di=k;slotAssignSound(T.sa,it,k,fp?'pre':'sons');return}const e=S.L.findIndex(l=>!l.src);if(e>=0)T.di=e}T.view='dest';ui()}
 function addPadBank(it){const nm=nameOf(it.id).toUpperCase().slice(0,22);S.pdb.push({n:nm,src:it.id});S.pb=2+S.pdb.length;T.padb=0;T.view=T.last&&T.last!='sons0'?T.last:'root';save();padUi();ui();sfEnsure(it.id,p=>ovs('CARREGANDO BANCO',nm+' · '+Math.round(p*100)+'%',60000)).then(r=>ovs(r?'BANCO DE PADS ADICIONADO':'ERRO AO CARREGAR',nm,2400))}
-function delSF(fid){S.lib=S.lib.filter(f=>f.id!=fid);dbDel(fid);const pre='sf:'+fid+':';S.L.forEach(l=>{if(l.src&&l.src.startsWith(pre)){l.src=null;l.on=0}});S.pm=S.pm.map(x=>x&&x.startsWith(pre)?'int':x);S.pdb=S.pdb.filter(b=>!b.src.startsWith(pre));if(S.pb>=3+S.pdb.length)S.pb=0;sfFree(fid);rebuild();T.si=Math.max(0,Math.min(T.si,LIB.length-1));apply()}
+function delSF(fid){S.lib=S.lib.filter(f=>f.id!=fid);dbDel(fid);const pre='sf:'+fid+':';S.L.forEach(l=>{if(l.src&&l.src.startsWith(pre)){l.src=null;l.on=0}});S.pm=S.pm.map(x=>x&&x.startsWith(pre)?'':x);S.pdb=S.pdb.filter(b=>!b.src.startsWith(pre));if(S.pb>=3+S.pdb.length)S.pb=0;sfFree(fid);rebuild();T.si=Math.max(0,Math.min(T.si,LIB.length-1));apply()}
 async function impSF(fs,dir){let ok=0,dup=0,bad=0,mw=0;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
  for(let i=0;i<fs.length;i++){const f=fs[i];if(!/\.sf2$/i.test(f.name)){bad++;continue}ovs('IMPORTANDO '+(i+1)+'/'+fs.length,f.name.toUpperCase(),60000);
   try{const id='f'+hsh(f.name+'|'+f.size+'|'+(f.lastModified||0));if(S.lib.some(x=>x.id==id)){dup++;continue}
@@ -227,14 +227,14 @@ function fxPage(d){S.fp=(S.fp+d+4)%4;fxClose();save();ui();ovs('EFFECTS '+(S.fp+
 let ac,N={bus:[],vib:[],rotD:[]},scale=1,FXC={},REV={},DLY={};
 function init(){if(ac){ac.state!='running'&&ac.resume();return}
 ac=new(window.AudioContext||window.webkitAudioContext)();const g=()=>ac.createGain(),c=(...a)=>a.reduce((x,y)=>x.connect(y));
-N.mst=g();N.comp=ac.createDynamicsCompressor();N.an=ac.createAnalyser();N.comp.threshold.value=-14;c(N.mst,N.comp,N.an,ac.destination);
+N.mst=g();N.comp=ac.createDynamicsCompressor();N.an=ac.createAnalyser();N.comp.threshold.value=-2;N.comp.knee.value=2;N.comp.ratio.value=20;N.comp.attack.value=.001;N.comp.release.value=.4;c(N.mst,N.comp,N.an,ac.destination);
 N.p=g();N.tone=ac.createBiquadFilter();N.tone.type='lowpass';N.tls=Bq('lowshelf',200);N.tsh=Bq('highshelf',5000);N.tls.gain.value=0;N.tsh.gain.value=0;c(N.p,N.tls,N.tsh,N.tone);FXC.P=mkChain(N.tone,N.mst);N.padv=Gn(0);N.padv.connect(N.mst);
 const vl=ac.createOscillator();vl.frequency.value=6;vl.start();
-for(let i=0;i<7;i++){const b=g(),vd=g(),rd=g(),lf=ac.createOscillator();FXC[i==6?'O':i]=mkChain(b,N.mst);vl.connect(vd);lf.connect(rd);rd.connect(b.gain);lf.start();N.bus.push(b);N.vib.push(vd);N.rotD.push(rd);(N.lf=N.lf||[]).push(lf)}
+for(let i=0;i<7;i++){const b=g(),vd=g(),rd=g(),lf=ac.createOscillator();FXC[i==6?'O':i]=mkChain(b,N.mst);rd.gain.value=0;lf.frequency.value=.8;vl.connect(vd);lf.connect(rd);rd.connect(b.gain);lf.start();N.bus.push(b);N.vib.push(vd);N.rotD.push(rd);(N.lf=N.lf||[]).push(lf)}
 apply();fxApplyAll();padVol()}
 function apply(){if(!ac)return;const t=ac.currentTime,sp=(p,v)=>p.setTargetAtTime(v,t,.03);
 sp(N.mst.gain,S.mst**2);sp(N.p.gain,S.vol**2*1.2);{const a=.3+.7*S.amt,a2=Math.pow(a,.55),c=S.chr;sp(N.tone.frequency,c==0?20000*Math.pow(1800/20000,a2):c==2?20000*Math.pow(900/20000,a2):20000);sp(N.tls.gain,c==0?7*a:c==1?-5*a:0);sp(N.tsh.gain,c==1?12*a:c==0?-4*a:-6*a)}
-S.L.forEach((l,i)=>{const gv=l.on&&l.src?l.vol**2*.9:0;sp(N.bus[i].gain,gv)});{const o=S.og,gv=o.on?.6:0;sp(N.bus[6].gain,gv);sp(N.rotD[6].gain,o.rot?.25*gv:0);sp(N.lf[6].frequency,o.rot==2?6.5:.8);sp(N.vib[6].gain,VD[o.vib])}}
+S.L.forEach((l,i)=>{const gv=l.on&&l.src?l.vol**2*.9:0;sp(N.bus[i].gain,gv);sp(N.rotD[i].gain,0)});{const o=S.og,gv=o.on?.6:0;sp(N.bus[6].gain,gv);sp(N.rotD[6].gain,o.rot?.25*gv:0);sp(N.lf[6].frequency,o.rot==2?6.5:.8);sp(N.vib[6].gain,VD[o.vib])}}
 const V={},sust=new Set(),ALL=new Set(),chs=new Set();
 function noteOn(m,id){init();if(T.view=='spl'){S.sk=m;save();lcdr()}HN[id]=m+S.tr;chordUpdate();if(V[id])rel(id);if(Object.keys(V).length>48)return;const vel=T.nv||100;
 const t=ac.currentTime,f=440*2**((m+S.tr-69)/12),v={r:[],o:[]},g=x=>{const n=ac.createGain();n.gain.value=x;return n};
@@ -248,13 +248,14 @@ if(l.perc){const o=osc('sine',f*fo*3),a=g(0);a.gain.setValueAtTime(.3,t);a.gain.
 if(S.og.on&&(!S.split||zn(S.sz[7],m))){const og=S.og,fo=2**((og.oct||0)+(og.tr||0)/12),e=lay(N.bus[6],.05),cd=CH[og.vib];e.gain.linearRampToValueAtTime(1,t+.01);
 H.forEach((h,j)=>{const lv=og.db[j];if(lv<.01)return;[0,cd].forEach((d,k)=>{if(k&&!cd)return;const o=osc('sine',f*fo*h,d),a=g(lv**1.5*.12*(cd?.7:1));N.vib[6].connect(o.detune);o.connect(a);a.connect(e)})});
 if(og.perc){const o=osc('sine',f*fo*3),a=g(0);a.gain.setValueAtTime(.3,t);a.gain.setTargetAtTime(0,t,.12);o.connect(a);a.connect(e)}}
-if((!S.split||zn(S.sz[0],m))&&S.vol>.01){const pm=S.pm[S.inst];if(pm&&pm!='int'&&!S.hid.includes(pm)&&SIM[+pm.slice(3)])simv(SIM[+pm.slice(3)],N.p,f*2**((S.po||0)+(S.pt||0)/12));else if(pm&&pm.startsWith('sf:')&&SFZ[pm])sfv(pm,N.p,S.tr+(S.po||0)*12+(S.pt||0));else{const e=lay(N.p,.18),I=INS[S.inst],tau=Math.max(.3,I.t-(m-36)*I.k);e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.35,t+.004);e.gain.setTargetAtTime(.03,t+.004,tau);I.p.forEach(([h,a])=>{const o=osc('sine',f*2**((S.po||0)+(S.pt||0)/12)*h),x=g(a);o.connect(x);x.connect(e)})}}
+if(S.vol>.01&&!S.pm[S.inst]&&(!S.split||zn(S.sz[0],m))&&(!T.pmh||Date.now()-T.pmh>6000)){T.pmh=Date.now();ovs('PIANO SEM SOM','ESCOLHA EM SETTINGS › PIANO PADRÃO',2600)}
+if((!S.split||zn(S.sz[0],m))&&S.vol>.01){const pm=S.pm[S.inst];if(pm&&pm!='int'&&!S.hid.includes(pm)&&SIM[+pm.slice(3)])simv(SIM[+pm.slice(3)],N.p,f*2**((S.po||0)+(S.pt||0)/12));else if(pm&&pm.startsWith('sf:')&&SFZ[pm])sfv(pm,N.p,S.tr+(S.po||0)*12+(S.pt||0));else if(pm=='int'){const e=lay(N.p,.18),I=INS[S.inst],tau=Math.max(.3,I.t-(m-36)*I.k);e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.35,t+.004);e.gain.setTargetAtTime(.03,t+.004,tau);I.p.forEach(([h,a])=>{const o=osc('sine',f*2**((S.po||0)+(S.pt||0)/12)*h),x=g(a);o.connect(x);x.connect(e)})}}
 V[id]=v;ALL.add(v)}
 function rel(id){const v=V[id];if(!v)return;const t=ac.currentTime;v.r.forEach(([r,tau])=>r.gain.setTargetAtTime(0,t,tau));setTimeout(()=>{v.o.forEach(o=>{try{o.stop()}catch(e){}});v.r.forEach(([r])=>{try{r.disconnect()}catch(e){}});ALL.delete(v)},3500);delete V[id];sust.delete(id)}
 function midiPanic(){const ma=T.ma;if(!ma||!ma.outputs)return 0;let n=0;const cs=chs.size?[...chs]:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];try{ma.outputs.forEach(o=>{cs.forEach(c=>[[120,0],[123,0],[64,0]].forEach(([cc,v])=>o.send([0xB0|c,cc,v])));n++})}catch(e){}return n}
 function killV(v){const t=ac.currentTime;v.r.forEach(([r])=>{try{r.gain.cancelScheduledValues(t);r.gain.setValueAtTime(r.gain.value,t);r.gain.linearRampToValueAtTime(0,t+.03)}catch(e){}});v.o.forEach(o=>{try{o.stop(t+.05)}catch(e){}});setTimeout(()=>v.r.forEach(([r])=>{try{r.disconnect()}catch(e){}}),250);ALL.delete(v)}
 function panicN(){if(ac)[...ALL].forEach(killV);Object.keys(V).forEach(k=>delete V[k]);sust.clear();T.sm=0;T.sk=0;for(const k in HN)delete HN[k];clearTimeout(ct_);T.cv=0;[...kb.children].forEach(c=>c.classList.remove('dn'));const n=midiPanic();ovs('PANIC',n?'NOTAS INTERROMPIDAS · MIDI CC120/123 ENVIADO':'NOTAS INTERROMPIDAS',1500)}
-function rebuildBuses(){const g=()=>ac.createGain();for(let i=0;i<7;i++){try{N.bus[i].disconnect();N.rotD[i].disconnect();N.lf[i].disconnect()}catch(e){}const b=g(),rd=g();b.connect(FXC[i==6?'O':i].in);N.lf[i].connect(rd);rd.connect(b.gain);N.bus[i]=b;N.rotD[i]=rd}try{N.p.disconnect()}catch(e){}const p=g();p.connect(N.tls);N.p=p;apply()}
+function rebuildBuses(){const g=()=>ac.createGain();for(let i=0;i<7;i++){try{N.bus[i].disconnect();N.rotD[i].disconnect();N.lf[i].disconnect()}catch(e){}const b=g(),rd=g();rd.gain.value=0;b.connect(FXC[i==6?'O':i].in);N.lf[i].connect(rd);rd.connect(b.gain);N.bus[i]=b;N.rotD[i]=rd}try{N.p.disconnect()}catch(e){}const p=g();p.connect(N.tls);N.p=p;apply()}
 function panicT(){panicN();padOff(true);if(ac){try{rebuildBuses()}catch(e){}try{fxReset()}catch(e){}if(ac.state!='running')ac.resume()}ovs('PANIC TOTAL','ÁUDIO, PADS E CAUDAS REINICIADOS',2400)}
 // ---------- DSP DOS EFFECTS (processamento real) ----------
 function Gn(x){const n=ac.createGain();n.gain.value=x==null?1:x;return n}
@@ -336,14 +337,14 @@ async function sfStruct(blob){const rd=async(a,n)=>new DataView(await blob.slice
  const C={};let q=0;while(q+8<=pd.byteLength){const id=cs4(pd,q,4),sz=u32(pd,q+4);C[id]=[q+8,sz];q+=8+sz+(sz&1)}
  const rec=(id,n,f)=>{const[o,sz]=C[id],r=[];for(let i=0;i+n<=sz;i+=n)r.push(f(o+i));return r},G=o=>({op:u16(pd,o),lo:pd.getUint8(o+2),hi:pd.getUint8(o+3),v:s16(pd,o+2)});
  return{ph:rec('phdr',38,o=>({n:cs4(pd,o,20),pr:u16(pd,o+20),bk:u16(pd,o+22),bag:u16(pd,o+24)})),pb:rec('pbag',4,o=>({g:u16(pd,o)})),pg:rec('pgen',4,G),ins:rec('inst',22,o=>({n:cs4(pd,o,20),bag:u16(pd,o+20)})),ib:rec('ibag',4,o=>({g:u16(pd,o)})),ig:rec('igen',4,G),
-  sh:rec('shdr',46,o=>({n:cs4(pd,o,20),s:u32(pd,o+20),e:u32(pd,o+24),ls:u32(pd,o+28),le:u32(pd,o+32),r:u32(pd,o+36),pc:pd.getUint8(o+40),cr:pd.getInt8(o+41)})),smpl}}
+  sh:rec('shdr',46,o=>({n:cs4(pd,o,20),s:u32(pd,o+20),e:u32(pd,o+24),ls:u32(pd,o+28),le:u32(pd,o+32),r:u32(pd,o+36),pc:pd.getUint8(o+40),cr:pd.getInt8(o+41),ty:u16(pd,o+44)})),smpl}}
 function sfZones(st,pi){const{ph,pb,pg,ins,ib,ig,sh}=st,out=[],gens=(g,a,b)=>{const m={};for(let i=a;i<b;i++)m[g[i].op]=g[i];return m},pr=ph[pi],pr2=ph[pi+1];let pgl=null;
  for(let b=pr.bag;b<pr2.bag;b++){const m=gens(pg,pb[b].g,pb[b+1].g);if(!m[41]){if(b==pr.bag)pgl=m;continue}
   const pm=Object.assign({},pgl||{},m),I=ins[pm[41].v],I2=ins[pm[41].v+1];let igl=null;
   for(let c=I.bag;c<I2.bag;c++){const n=gens(ig,ib[c].g,ib[c+1].g);if(!n[53]){if(c==I.bag)igl=n;continue}
    const zm=Object.assign({},igl||{},n),rg=(op)=>{let lo=0,hi=127;if(zm[op]){lo=zm[op].lo;hi=zm[op].hi}if(pm[op]){lo=Math.max(lo,pm[op].lo);hi=Math.min(hi,pm[op].hi)}return[lo,hi]},
     gv=(op,d)=>(zm[op]?zm[op].v:d)+(pm[op]?pm[op].v:0),gz=(op,d)=>zm[op]?zm[op].v:d,s=sh[zm[53].v],[kl,kh]=rg(43),[vl,vh]=rg(44),ro=gz(58,-1);
-   out.push({kl,kh,vl,vh,sid:zm[53].v,root:ro>=0?ro:(s.pc==255?60:s.pc),sc:gz(56,100),tune:gv(51,0)*100+gv(52,0)+s.cr,loop:(gz(54,0)&1)==1,att:gv(48,0),pan:Math.max(-1,Math.min(1,gv(17,0)/500)),
+   out.push({kl,kh,vl,vh,sid:zm[53].v,root:ro>=0?ro:(s.pc==255?60:s.pc),sc:gz(56,100),tune:gv(51,0)*100+gv(52,0)+s.cr,loop:(gz(54,0)&1)==1,att:gv(48,0),pan:Math.max(-1,Math.min(1,((zm[17]?zm[17].v:((s.ty&7)==4?-500:(s.ty&7)==2?500:0))+(pm[17]?pm[17].v:0))/500)),
     dl:tcs(gv(33,-12000)),at:tcs(gv(34,-12000)),ho:tcs(gv(35,-12000)),dc:tcs(gv(36,-12000)),su:gv(37,0),rl:tcs(gv(38,-12000)),fc:gv(8,13500),q:gv(9,0),lso:gz(2,0)+gz(45,0)*32768,leo:gz(3,0)+gz(50,0)*32768})}}
  return out}
 async function sfEnsure(src,onp){if(SFZ[src])return 1;try{const[,fid,pi]=src.split(':'),f=S.lib.find(x=>x.id==fid);if(!f)return 0;const blob=await dbGet(fid);if(!blob)return 0;
@@ -356,7 +357,7 @@ function sfPlay(src,m,vel,bus,tr,lay,v,t){const Z=SFZ[src];if(!Z)return;Z.forEac
  const s=ac.createBufferSource();s.buffer=z.buf;s.playbackRate.value=Math.pow(2,((m-z.root)*z.sc+z.tune+tr*100)/1200);if(z.loop&&z.le>z.ls){s.loop=true;s.loopStart=z.ls;s.loopEnd=z.le}
  const e=lay(bus,Math.max(.03,z.rl/5)),pk=Math.pow(10,-z.att/200)*Math.pow(vel/127,2),t1=t+z.dl,t2=t1+z.at,t3=t2+z.ho;
  e.gain.setValueAtTime(0,t);e.gain.setValueAtTime(0,t1);e.gain.linearRampToValueAtTime(pk,t2+.0001);e.gain.setValueAtTime(pk,t3);e.gain.setTargetAtTime(pk*Math.pow(10,-z.su/200),t3,Math.max(.01,z.dc/4.6));
- let o=s;if(z.fc<19000){const f=Bq('lowpass',8.176*Math.pow(2,z.fc/1200),Math.max(0,Math.min(20,z.q/10)));s.connect(f);o=f}
+ let o=s;if(z.fc<13300){const f=Bq('lowpass',8.176*Math.pow(2,z.fc/1200),Math.max(0,Math.min(20,z.q/10)));s.connect(f);o=f}
  const pn=Pn(z.pan);o.connect(pn);pn.connect(e);s.start(t);v.o.push(s)})}
 function sfLoad(src){const nm=nameOf(src).toUpperCase();return sfEnsure(src,p=>ovs('CARREGANDO SF2',nm+' · '+Math.round(p*100)+'%',60000)).then(r=>{ovs(r?'SF2 PRONTO':'ERRO AO CARREGAR SF2',r?nm:nm+' · REIMPORTE O ARQUIVO',2600);return r})}
 function sfRestore(){S.L.forEach(l=>{if(l.src&&l.src.startsWith('sf:'))sfEnsure(l.src)});S.qp.forEach(id=>{const q=S.P.find(x=>x.id==id);if(q&&q.d&&q.d.L)q.d.L.forEach(l=>{if(l.src&&l.src.startsWith('sf:'))sfEnsure(l.src)})});S.pm.forEach(id=>{if(id&&id.startsWith('sf:'))sfEnsure(id)});S.pdb.forEach(b=>sfEnsure(b.src))}
@@ -421,7 +422,7 @@ itemName=id=>{const it=ALLS().find(x=>x.id==id);return it?dn(it):nameOf(id)},pad
 function nameOf(src){if(!src)return 'VAZIO';if(src=='organ')return 'ORGAN';if(src=='int')return 'INTERNO';if(src.startsWith('sim'))return S.al[src]||(SIM[+src.slice(3)]||{n:'?'}).n;const[,fid,pi]=src.split(':'),f=S.lib.find(x=>x.id==fid);if(!f)return 'SF2 AUSENTE';const p=f.ps[+pi];return(S.al['sf:'+fid+':*']||f.name.replace(/\.sf2$/i,''))+(f.ps.length>1&&p?' · '+p.n:'')}
 rebuild();let bt_;
 function say(t){const b=$('#bar');b.textContent=t;marq(b);clearTimeout(bt_);bt_=setTimeout(lcdr,2200)}
-const PL=()=>['int',...SIM.map((x,i)=>'sim'+i).filter(id=>!S.hid.includes(id)),...S.lib.map(f=>'sf:'+f.id+':0')],pmName=i=>nameOf(S.pm[i]).toUpperCase();
+const PL=()=>['','int',...SIM.map((x,i)=>'sim'+i).filter(id=>!S.hid.includes(id)),...S.lib.map(f=>'sf:'+f.id+':0')],pmName=i=>S.pm[i]?nameOf(S.pm[i]).toUpperCase():'SEM SOM';
 function marq(el){const c=el.clientWidth;if(!c||el.scrollWidth<=c+1)return;const t=document.createElement('span');t.className='mq';t.innerHTML=el.innerHTML;el.textContent='';el.append(t);const d=t.offsetWidth-c+8;t.style.setProperty('--mx',-d+'px');t.style.setProperty('--t',Math.max(3,d/40)+'s')}
 const fitTxt=()=>{marq($('#nm'));marq($('#bar'))};
 function pn(){const p=S.P.find(x=>x.id==S.pc);return p?p.n+(isDirty(p)?'*':''):'SEM PRESET'}
@@ -441,7 +442,7 @@ else if(T.view=='set'){const on=[$('#kb').classList.contains('on'),!!(document.f
 else if(T.view=='pads'){nm.innerHTML='<div class=dr>'+PADN.map((n,i)=>`<span class="dd ${i==T.pd?'c':''}" style="gap:0;align-items:center;font-size:25px;height:38px;${i==T.pk?'text-decoration:underline':''}">${n}</span>`).join('')+'</div>';bar.textContent=`${padNames()[S.pb]} · ${PADN[T.pd]} · SELECT ${T.pk==T.pd?'PARA':'TOCA'}`}
 else if(T.view=='qrm'){const p=S.P.find(x=>x.id==S.qp[T.rq]);nm.textContent='REMOVER?';bar.textContent=`SLOT ${T.rq+1} - ${p?p.n:'VAZIO'} · SELECT = SIM`}
 else if(T.view=='pp'){nm.textContent=IN[T.pp];bar.textContent=pmName(T.pp)+' · SELECT TROCA'}
-else if(T.view=='ppl'){const l=PL(),id=l[T.pj];nm.textContent=(S.pm[T.pp]==id?'● ':'')+nameOf(id);bar.textContent=`${IN[T.pp]} ▶ ${T.pj+1}/${l.length} · SELECT SALVA`}
+else if(T.view=='ppl'){const l=PL(),id=l[T.pj];nm.textContent=(S.pm[T.pp]==id?'● ':'')+(id?nameOf(id):'SEM SOM');bar.textContent=`${IN[T.pp]} ▶ ${T.pj+1}/${l.length} · SELECT SALVA`}
 else if(T.view=='pres'){if(!S.P.length){nm.textContent='SEM PRESETS';bar.textContent='USE O BOTÃO MEMORY'}else{const p=S.P[T.pi];nm.textContent=(p.id==S.pc?'● ':'')+(S.fav.includes('p'+p.id)?'★ ':'')+p.n;bar.textContent=`PRESET ${T.pi+1}/${S.P.length} · ••• AÇÕES`}}
 else if(T.view=='pact'){const a=acts()[T.ai];nm.textContent=(a=='FAVORITAR'?'★ ':'')+a;bar.textContent=T.cf&&a=='EXCLUIR'?'SELECT = CONFIRMAR EXCLUSÃO':ctxName()}
 else if(T.view=='qp'){if(!S.P.length){nm.textContent='SEM PRESETS';bar.textContent='USE O BOTÃO MEMORY'}else if(T.qj>=S.P.length){nm.textContent=(S.qp[T.qi]==-1?'● ':'')+'— VAZIO —';bar.textContent=`SLOT ${T.qi+1} ▶ SELECT LIMPA O SLOT`}else{const p=S.P[T.qj];nm.textContent=(S.qp[T.qi]==p.id?'● ':'')+p.n;bar.textContent=`SLOT ${T.qi+1} ▶ ${T.qj+1}/${S.P.length} · SELECT ATRIBUI`}}
